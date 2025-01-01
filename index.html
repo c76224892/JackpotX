@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Solana Jackpot</title>
+  <style>
+    /* 1) Background is now black */
+    body {
+      font-family: 'Courier New', monospace;
+      background-color: #000;
+      color: #0f0;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+      text-align: center;
+    }
+
+    /* Adding a subtle glow animation for the heading */
+    h1 {
+      font-size: 2.5em;
+      animation: glowTitle 2s infinite;
+    }
+
+    @keyframes glowTitle {
+      0%, 100% {
+        color: #0f0;
+      }
+      50% {
+        color: #0d0;
+      }
+    }
+
+    #wallet-container, #game-container {
+      margin: 20px;
+      max-width: 600px;
+      text-align: center;
+    }
+
+    input {
+      background-color: #222; /* Black-like input background */
+      color: #0f0;
+      border: 1px solid #0f0;
+      padding: 10px;
+      font-size: 1.2em;
+      width: 100%;
+      margin-bottom: 10px;
+    }
+
+    button {
+      background-color: #0f0;
+      color: #000;
+      padding: 10px 20px;
+      font-size: 1.2em;
+      border: none;
+      cursor: pointer;
+      margin-top: 10px;
+      width: 100%;
+      transition: background-color 0.3s;
+    }
+
+    button:hover {
+      background-color: #0a0;
+    }
+
+    .ascii-text {
+      font-size: 1.2em;
+      white-space: pre;
+      line-height: 1.5;
+      margin: 10px 0;
+      animation: subtleGlow 2s infinite;
+    }
+
+    @keyframes subtleGlow {
+      0%, 100% {
+        color: #0f0;
+      }
+      50% {
+        color: #0a0;
+      }
+    }
+
+    /* Adjust as needed for the puzzle prompt */
+    #puzzle-container {
+      margin-top: 20px;
+      font-size: 1.5em;
+    }
+
+    #user-answer {
+      width: 150px; 
+      text-align: center;
+      font-size: 1.2em;
+      margin-top: 10px;
+    }
+
+    #result-message {
+      font-size: 1.8em;
+      color: #0ff;
+      margin-top: 20px;
+      display: none;
+      animation: fadeInOut 3s infinite; 
+    }
+
+    @keyframes fadeInOut {
+      0%   { opacity: 0; }
+      50%  { opacity: 1; }
+      100% { opacity: 0; }
+    }
+  </style>
+</head>
+<body>
+  <div id="wallet-container">
+    <h1>Enter the Solana Jackpot</h1>
+    <p class="ascii-text">Submit your wallet to join the exclusive jackpot!</p>
+    <!-- Updated to 5 minutes (you can keep or change) -->
+    <p class="ascii-text">Every 5 minutes, 0.1 Solana will be given away!</p>
+    <input type="text" id="wallet" placeholder="Enter your Solana wallet address"/>
+    <button onclick="submitWallet()">Join Jackpot</button>
+  </div>
+
+  <div id="game-container" style="display: none;">
+    <h1>Solve the Puzzle</h1>
+    <p>Quickly solve this puzzle to reveal your exclusive number!</p>
+    <div id="puzzle-container"></div>
+    <input type="text" id="user-answer" placeholder="Enter your answer"/>
+    <button onclick="checkAnswer()">Check Answer</button>
+  </div>
+
+  <p id="result-message"></p>
+
+  <script>
+    let jackpotNumber = Math.floor(Math.random() * 50) + 1;
+
+    // Variables for the puzzle
+    let number1, number2, operator, correctAnswer;
+
+    function submitWallet() {
+      const wallet = document.getElementById('wallet').value;
+      const walletContainer = document.getElementById('wallet-container');
+      const gameContainer = document.getElementById('game-container');
+
+      // Basic Solana wallet validation
+      if (/^[1-9A-HJ-NP-Za-km-z]{32,44}$/.test(wallet)) {
+        walletContainer.style.display = 'none';
+        gameContainer.style.display = 'block';
+        
+        generatePuzzle();
+      } else {
+        alert('Please enter a valid Solana wallet address.');
+      }
+    }
+
+    // 2) A new, slightly harder puzzle:
+    // Generate a random addition or subtraction puzzle
+    // for the user to solve quickly.
+    function generatePuzzle() {
+      // Randomly pick two numbers between 1 and 25
+      number1 = Math.floor(Math.random() * 25) + 1;
+      number2 = Math.floor(Math.random() * 25) + 1;
+      
+      // Randomly choose + or - operator
+      operator = Math.random() < 0.5 ? '+' : '-';
+
+      // Calculate the correct answer
+      if (operator === '+') {
+        correctAnswer = number1 + number2;
+      } else {
+        correctAnswer = number1 - number2;
+      }
+
+      // Display the puzzle
+      document.getElementById('puzzle-container').textContent =
+        `What is ${number1} ${operator} ${number2}?`;
+
+      // Clear the user’s previous input
+      document.getElementById('user-answer').value = '';
+    }
+
+    // Check the user's answer against the correctAnswer
+    function checkAnswer() {
+      const userAnswer = document.getElementById('user-answer').value.trim();
+
+      if (parseInt(userAnswer, 10) === correctAnswer) {
+        document.getElementById('game-container').style.display = 'none';
+        const resultMessage = document.getElementById('result-message');
+        resultMessage.textContent = 
+          `Congratulations! Your jackpot number is: ${jackpotNumber}`;
+        resultMessage.style.display = 'block';
+      } else {
+        alert('Incorrect answer. Try again!');
+        generatePuzzle();
+      }
+    }
+  </script>
+</body>
+</html>
