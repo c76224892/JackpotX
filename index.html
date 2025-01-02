@@ -3,13 +3,13 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Solana Jackpot</title>
+  <title>JackpotX - Guess the Number</title>
   <style>
-    /* 1) Background is now black */
+    /* Overall body styling */
     body {
       font-family: 'Courier New', monospace;
-      background-color: #000;
-      color: #0f0;
+      background-color: #1A001A; /* Dark purple background */
+      color: #ff77ff;           /* Neon-pink text */
       display: flex;
       flex-direction: column;
       justify-content: center;
@@ -19,21 +19,24 @@
       text-align: center;
     }
 
-    /* Adding a subtle glow animation for the heading */
+    /* Heading with a new glow animation */
     h1 {
       font-size: 2.5em;
-      animation: glowTitle 2s infinite;
+      animation: neonFlicker 2s infinite;
     }
 
-    @keyframes glowTitle {
+    @keyframes neonFlicker {
       0%, 100% {
-        color: #0f0;
+        color: #ff77ff;
+        text-shadow: 0 0 5px #ff77ff, 0 0 10px #ff77ff;
       }
       50% {
-        color: #0d0;
+        color: #ff55ff;
+        text-shadow: 0 0 10px #ff55ff, 0 0 20px #ff55ff;
       }
     }
 
+    /* Containers keep the same structure, but updated color scheme */
     #wallet-container, #game-container {
       margin: 20px;
       max-width: 600px;
@@ -41,18 +44,18 @@
     }
 
     input {
-      background-color: #222; /* Black-like input background */
-      color: #0f0;
-      border: 1px solid #0f0;
+      background-color: #330033; /* Darker purple input bg */
+      color: #ff77ff;
+      border: 1px solid #ff77ff;
       padding: 10px;
-      font-size: 1.2em;
+      font-size: 1.1em;
       width: 100%;
       margin-bottom: 10px;
     }
 
     button {
-      background-color: #0f0;
-      color: #000;
+      background-color: #ff77ff;
+      color: #1A001A;
       padding: 10px 20px;
       font-size: 1.2em;
       border: none;
@@ -63,7 +66,7 @@
     }
 
     button:hover {
-      background-color: #0a0;
+      background-color: #ff55ff;
     }
 
     .ascii-text {
@@ -76,32 +79,20 @@
 
     @keyframes subtleGlow {
       0%, 100% {
-        color: #0f0;
+        color: #ff77ff;
       }
       50% {
-        color: #0a0;
+        color: #ff55ff;
       }
     }
 
-    /* Adjust as needed for the puzzle prompt */
-    #puzzle-container {
-      margin-top: 20px;
-      font-size: 1.5em;
-    }
-
-    #user-answer {
-      width: 150px; 
-      text-align: center;
-      font-size: 1.2em;
-      margin-top: 10px;
-    }
-
+    /* The result message gets a new fade in/out effect */
     #result-message {
       font-size: 1.8em;
-      color: #0ff;
+      color: #ff7fff;
       margin-top: 20px;
       display: none;
-      animation: fadeInOut 3s infinite; 
+      animation: fadeInOut 3s infinite;
     }
 
     @keyframes fadeInOut {
@@ -112,87 +103,84 @@
   </style>
 </head>
 <body>
+  <!-- Wallet Container -->
   <div id="wallet-container">
-    <h1>Enter the Solana Jackpot</h1>
-    <p class="ascii-text">Submit your wallet to join the exclusive jackpot!</p>
-    <!-- Updated to 5 minutes (you can keep or change) -->
-    <p class="ascii-text">Every 5 minutes, 0.1 Solana will be given away!</p>
+    <h1>Join the JackpotX</h1>
+    <p class="ascii-text">Enter your wallet to join the jackpot!</p>
+    <p class="ascii-text">Every 5 minutes, 0.1 SOL will be given away!</p>
     <input type="text" id="wallet" placeholder="Enter your Solana wallet address"/>
-    <button onclick="submitWallet()">Join Jackpot</button>
+    <button onclick="submitWallet()">Join Now</button>
   </div>
 
+  <!-- Game Container (Hidden by Default) -->
   <div id="game-container" style="display: none;">
-    <h1>Solve the Puzzle</h1>
-    <p>Quickly solve this puzzle to reveal your exclusive number!</p>
-    <div id="puzzle-container"></div>
-    <input type="text" id="user-answer" placeholder="Enter your answer"/>
-    <button onclick="checkAnswer()">Check Answer</button>
+    <h1>Guess the Number</h1>
+    <p>We picked a secret number from 1 to 5. Try to guess it!</p>
+    <input type="number" id="guess-input" min="1" max="5" placeholder="Enter a number (1-5)"/>
+    <button onclick="checkGuess()">Submit Guess</button>
+    <p id="game-feedback" style="margin-top: 20px;"></p>
   </div>
 
+  <!-- Result Message -->
   <p id="result-message"></p>
 
   <script>
-    let jackpotNumber = Math.floor(Math.random() * 50) + 1;
-
-    // Variables for the puzzle
-    let number1, number2, operator, correctAnswer;
+    let jackpotNumber = Math.floor(Math.random() * 50) + 1; 
+    let secretNumber = Math.floor(Math.random() * 5) + 1;
+    let attempts = 3; // Number of attempts the user has
 
     function submitWallet() {
       const wallet = document.getElementById('wallet').value;
       const walletContainer = document.getElementById('wallet-container');
       const gameContainer = document.getElementById('game-container');
 
-      // Basic Solana wallet validation
+      // Basic validation for Solana wallet: 
+      // (This is a simplified regex just to emulate the old format)
       if (/^[1-9A-HJ-NP-Za-km-z]{32,44}$/.test(wallet)) {
         walletContainer.style.display = 'none';
         gameContainer.style.display = 'block';
-        
-        generatePuzzle();
       } else {
         alert('Please enter a valid Solana wallet address.');
       }
     }
 
-    // 2) A new, slightly harder puzzle:
-    // Generate a random addition or subtraction puzzle
-    // for the user to solve quickly.
-    function generatePuzzle() {
-      // Randomly pick two numbers between 1 and 25
-      number1 = Math.floor(Math.random() * 25) + 1;
-      number2 = Math.floor(Math.random() * 25) + 1;
-      
-      // Randomly choose + or - operator
-      operator = Math.random() < 0.5 ? '+' : '-';
+    function checkGuess() {
+      const guessInput = document.getElementById('guess-input');
+      const guess = parseInt(guessInput.value, 10);
+      const feedback = document.getElementById('game-feedback');
 
-      // Calculate the correct answer
-      if (operator === '+') {
-        correctAnswer = number1 + number2;
-      } else {
-        correctAnswer = number1 - number2;
+      // Basic validation
+      if (isNaN(guess) || guess < 1 || guess > 5) {
+        alert("Please enter a valid number between 1 and 5.");
+        return;
       }
 
-      // Display the puzzle
-      document.getElementById('puzzle-container').textContent =
-        `What is ${number1} ${operator} ${number2}?`;
+      attempts--;
 
-      // Clear the user’s previous input
-      document.getElementById('user-answer').value = '';
-    }
-
-    // Check the user's answer against the correctAnswer
-    function checkAnswer() {
-      const userAnswer = document.getElementById('user-answer').value.trim();
-
-      if (parseInt(userAnswer, 10) === correctAnswer) {
+      if (guess === secretNumber) {
+        // The user guessed correctly
         document.getElementById('game-container').style.display = 'none';
         const resultMessage = document.getElementById('result-message');
-        resultMessage.textContent = 
-          `Congratulations! Your jackpot number is: ${jackpotNumber}`;
+        resultMessage.textContent = `Congratulations! Your jackpot number is: ${jackpotNumber}`;
         resultMessage.style.display = 'block';
       } else {
-        alert('Incorrect answer. Try again!');
-        generatePuzzle();
+        // Wrong guess
+        if (attempts > 0) {
+          feedback.textContent = `Wrong guess! You have ${attempts} attempt(s) left. Try again!`;
+        } else {
+          // No attempts left
+          feedback.textContent = "No attempts left! Resetting the puzzle...";
+          setTimeout(resetGame, 2000);
+        }
       }
+      guessInput.value = '';
+    }
+
+    function resetGame() {
+      // Reset game variables
+      attempts = 3;
+      secretNumber = Math.floor(Math.random() * 5) + 1;
+      document.getElementById('game-feedback').textContent = '';
     }
   </script>
 </body>
